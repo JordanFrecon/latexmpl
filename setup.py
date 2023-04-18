@@ -1,36 +1,32 @@
-from setuptools import setup
-from setuptools.command.install import install
-import os
+# -*- coding: utf-8 -*-
+import matplotlib as mpl
+import glob
+import os.path
 import shutil
-import atexit
+import argparse
 
-import matplotlib
+parser = argparse.ArgumentParser()
+parser.add_argument('-install', action='store_true', default=True)
+parser.add_argument('-upgrade', action='store_true')
+options = parser.parse_args()
 
-def install_mplstyle():
-    stylefile = "latex.mplstyle"
+#~ # ref  ->  matplotlib/style/core
+BASE_LIBRARY_PATH = os.path.join(mpl.get_data_path(), 'stylelib')
+STYLE_PATH = os.path.join(os.getcwd(),'mplstyles')
+STYLE_EXTENSION = 'mplstyle'
+style_files = glob.glob(os.path.join(STYLE_PATH,"*.%s"%(STYLE_EXTENSION)))
 
-    mpl_stylelib_dir = os.path.join(matplotlib.get_configdir() ,"stylelib")
-    if not os.path.exists(mpl_stylelib_dir):
-        os.makedirs(mpl_stylelib_dir)
+for _path_file in style_files:
+    _, fname = os.path.split(_path_file)
+    dest = os.path.join(BASE_LIBRARY_PATH, fname)
+    if not os.path.isfile(dest) and options.install:
+        shutil.copy(_path_file, dest)
+        print("%s style installed"%(fname))
+    elif options.upgrade:
+        shutil.copy(_path_file, dest)
+        print("%s style upgraded"%(fname))
+    elif os.path.isfile(dest):
+        print("%s style already exists (use -upgrade to upgrade)"%(fname))
+    else:
+        pass # ¿?
 
-    print("Installing style into", mpl_stylelib_dir)
-    shutil.copy(
-        os.path.join(os.path.dirname(__file__), stylefile),
-        os.path.join(mpl_stylelib_dir, stylefile))
-
-class PostInstallMoveFile(install):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        atexit.register(install_mplstyle)
-
-setup(
-    name='matplotlib-latex-style',
-    version='0.1.0',
-    py_modules=['latex_style'],
-    install_requires=[
-        'matplotlib',
-    ],
-    cmdclass={
-        'install': PostInstallMoveFile,
-    }
-)
