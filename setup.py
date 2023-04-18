@@ -26,7 +26,7 @@ class PostInstallMoveFile(install):
 setup(
     name='matplotlib-latex-style',
     version='0.1.0',
-    py_modules=['mibilevel-dev'],
+    py_modules=['latex_style'],
     install_requires=[
         'matplotlib',
     ],
